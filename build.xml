@@ -35,8 +35,27 @@ limitations under the License.
 	<target name="compile" depends="prepare" description="Compiles JS Test Runner">
 		<javac destdir="${classes.dir}" srcdir="${src.dir}" classpathref="compile.classpath" />
 	</target>
+	
+	<target name="test-compile" depends="compile" description="Compiles JS Test Runner tests">
+		<javac destdir="${classes.dir}" srcdir="${test.dir}" classpathref="compile.classpath" />
+	</target>
+	
+	<target name="test" depends="test-compile" description="Runs JS Test Runner tests">
+		<junit showoutput="true" haltonerror="true">
+			<classpath refid="compile.classpath" />
+			<classpath path="${classes.dir}" />
+			
+			<formatter type="plain"/>
+			<batchtest fork="yes" todir="${classes.dir}">
+				<fileset dir="${classes.dir}">
+					<include name="**/*Test.class" />
+					<include name="**/JavascriptTestSuite.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
 
-	<target name="build" depends="compile" description="Generates JS Test Runner JAR file">
+	<target name="build" depends="test" description="Generates JS Test Runner JAR file">
 		<jar destfile="jstestrunner-${version}.jar" basedir="${classes.dir}" includes="**/*.class" />
 	</target>
 </project>

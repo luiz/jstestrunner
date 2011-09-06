@@ -20,7 +20,6 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlParagraph;
 
 class JavascriptTestCase extends TestCase {
 	private final DomNode item;
@@ -35,9 +34,9 @@ class JavascriptTestCase extends TestCase {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void runBare() {
-		List<HtmlParagraph> errorMessages = (List<HtmlParagraph>) item.getByXPath(errorXPath);
+		List<DomNode> errorMessages = (List<DomNode>) item.getByXPath(errorXPath);
 		StringBuilder builder = new StringBuilder();
-		for (HtmlParagraph htmlParagraph : errorMessages) {
+		for (DomNode htmlParagraph : errorMessages) {
 			builder.append(htmlParagraph.getTextContent());
 		}
 		if (errorMessages.size() > 0) {
