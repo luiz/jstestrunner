@@ -17,3 +17,9 @@ How to customize
 Extend the JavascriptTestSuite class and then use your customized
 class to run the tests. More instructions can be found on
 JavascriptTestSuite javadoc.
+
+Acknowlegments
+==============
+
+Many thanks to Caires Santos (cairesvs) and Lucas Cavalcanti (lucascs)
+for the help and original code.
