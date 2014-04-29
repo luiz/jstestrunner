@@ -50,7 +50,6 @@ public class JavascriptTestSuite extends TestSuite {
 			logTestPages(testPages);
 		}
 		WebClient client = createWebClient();
-		client.setThrowExceptionOnScriptError(true);
 		for (File page : testPages) {
 			HtmlPage htmlPage = client.getPage(page.toURI().toURL());
 			addTestsInPageToSuite(htmlPage);
@@ -72,7 +71,7 @@ public class JavascriptTestSuite extends TestSuite {
 	 * @return A configured web client
 	 */
 	protected WebClient createWebClient() {
-		return new WebClient(BrowserVersion.FIREFOX_3);
+		return new WebClient(BrowserVersion.FIREFOX_24);
 	}
 
 	/**
