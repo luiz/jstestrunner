@@ -11,7 +11,7 @@ How to use
     <dependency>
         <groupId>br.com.caelum</groupId>
         <artifactId>jstestrunner</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.1.0-SNAPSHOT</version>
     </dependency>
 
 3. In your project, extend the `JavascriptTestSuite` class as desired to fit
