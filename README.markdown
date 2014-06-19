@@ -11,7 +11,7 @@ How to use
     <dependency>
         <groupId>br.com.caelum</groupId>
         <artifactId>jstestrunner</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.2.0-SNAPSHOT</version>
     </dependency>
 
 3. In your project, extend the `JavascriptTestSuite` class as desired to fit
@@ -22,8 +22,16 @@ How to use
 How to customize
 ================
 
-Extend the JavascriptTestSuite class and then use your customized class to run
-the tests. Don't forget to implement the static `suite` method on your class.
+Extend the JavascriptTestSuite class, passing the JS test framework adapter to
+the superclass, and then use your customized class to run the tests.
+
+    public class MyJSTests extends JavascriptTestSuite {
+        public MyJSTests() {
+            super(new ScrewUnit());
+        }
+    }
+
+Don't forget to implement the static `suite` method on your class.
 More instructions can be found on JavascriptTestSuite javadoc.
 
 Acknowlegments
