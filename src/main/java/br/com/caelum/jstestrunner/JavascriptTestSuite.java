@@ -24,26 +24,40 @@ import junit.framework.TestSuite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import br.com.caelum.jstestrunner.framework.JavascriptTestFramework;
+import br.com.caelum.jstestrunner.framework.ScrewUnit;
+
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlHeading2;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+/**
+ * Aggregates all JS tests found in the project (see {@link #testPagesFolder()}
+ * and {@link #testPageFileFilter()}), extracting their status
+ *
+ * @author luiz
+ */
 public class JavascriptTestSuite extends TestSuite {
 
 	private static final Log LOG = LogFactory.getLog(JavascriptTestSuite.class);
 
+	private final JavascriptTestFramework framework;
+
 	public static TestSuite suite() throws IOException {
-		return new JavascriptTestSuite();
+		return new JavascriptTestSuite(new ScrewUnit());
 	}
 
 	/**
 	 * Creates the suite with all detected Javascript tests.
 	 *
-	 * @throws IOException If there's a problem accessing one of the Javascript test pages found.
+	 * @param framework Javascript test framework adapter
+	 * @see {@link JavascriptTestFramework}
 	 */
-	public JavascriptTestSuite() throws IOException {
+	public JavascriptTestSuite(JavascriptTestFramework framework) {
+		this.framework = framework;
 		this.setName(getSuiteName());
 		File[] testPages = findTestPages();
 		if (LOG.isInfoEnabled()) {
@@ -51,19 +65,25 @@ public class JavascriptTestSuite extends TestSuite {
 		}
 		WebClient client = createWebClient();
 		for (File page : testPages) {
-			HtmlPage htmlPage = client.getPage(page.toURI().toURL());
+			HtmlPage htmlPage;
+			try {
+				htmlPage = client.getPage(page.toURI().toURL());
+			} catch (FailingHttpStatusCodeException | IOException e) {
+				throw new RuntimeException("Error running page " + page.getAbsolutePath(), e);
+			}
 			addTestsInPageToSuite(htmlPage);
 		}
 	}
 
 	/**
-	 * Extend to configure. The default is "Javascript Test Suite".
+	 * Extend to configure. Returns a test suite name for JUnit
 	 *
-	 * @return The name of your test suite
+	 * @return The String "Javascript Test Suite"
 	 */
 	protected String getSuiteName() {
 		return "Javascript Test Suite";
 	}
+
 
 	/**
 	 * Extend to configure the creation of a HTMLUnit web client. The default is a Firefox 3 WebClient.
@@ -99,49 +119,18 @@ public class JavascriptTestSuite extends TestSuite {
 		};
 	}
 
-	/**
-	 * Extend to configure the XPath used to identify the failed tests inside a Javascript test page.
-	 * The default is "./*[contains(@class, 'error')]", i.e, elements with the "error" class.
-	 *
-	 * @return A XPath that identifies the failed tests
-	 */
-	protected String failedTestXPath() {
-		return "./*[contains(@class, 'error')]";
-	}
-
-	/**
-	 * Extend to configure how to identify the names of the tests in this page.
-	 * The default is "./h2", i.e, each test will be identified by a &lt;h2&gt; tag
-	 *
-	 * @return A XPath that identifies the tests' names
-	 */
-	protected String testNameXPath() {
-		return "./h2";
-	}
-
-	/**
-	 * Extend to configure how to identify the tests' results.
-	 * The default is ".//*[contains(@class, 'it enqueued')]", i.e,
-	 * each test result will be inside a tag with the classes "it" and "enqueued".
-	 *
-	 * @return A XPath that identifies the tests' results
-	 */
-	protected String testXPath() {
-		return ".//*[contains(@class, 'it enqueued')]";
-	}
-
 	private File[] findTestPages() {
 		return testPagesFolder().listFiles(testPageFileFilter());
 	}
 
 	@SuppressWarnings("unchecked")
 	private void addTestsInPageToSuite(HtmlPage page) {
-		List<DomNode> testList = (List<DomNode>) page.getByXPath(testXPath());
+		List<DomNode> testList = (List<DomNode>) page.getByXPath(framework.testXPath());
 		for (DomNode testListItem : testList) {
-			List<HtmlHeading2> testNameCandidates = (List<HtmlHeading2>) testListItem.getByXPath(testNameXPath());
+			List<HtmlHeading2> testNameCandidates = (List<HtmlHeading2>) testListItem.getByXPath(framework.testNameXPath());
 			String testName = testNameCandidates.iterator().next().getTextContent();
 			LOG.info("Found test '" + testName + "'");
-			this.addTest(new JavascriptTestCase(testName, testListItem, failedTestXPath()));
+			this.addTest(new JavascriptTestCase(testName, testListItem, framework.failedTestXPath()));
 		}
 	}
 
